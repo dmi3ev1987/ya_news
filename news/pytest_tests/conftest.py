@@ -1,7 +1,6 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 import pytest
 
-from django.urls import reverse
 from django.conf import settings
 from django.test.client import Client
 from django.utils import timezone
@@ -38,17 +37,16 @@ def not_author_client(not_author):
 
 @pytest.fixture
 def news():
-    news = News.objects.create(
+    return News.objects.create(
         title='Тестовая новость.',
         text='Просто текст.',
-        date=datetime.today(),
+        date=timezone.now().today(),
     )
-    return news
 
 
 @pytest.fixture
 def all_news():
-    today = datetime.today()
+    today = timezone.now().today()
     all_news = [
         News(
             title=f'Новость {index}',
@@ -62,13 +60,12 @@ def all_news():
 
 @pytest.fixture
 def comment(author, news):
-    comment = Comment.objects.create(
+    return Comment.objects.create(
         news=news,
         author=author,
         text='Текст комментария',
         created=timezone.now(),
     )
-    return comment
 
 
 @pytest.fixture
@@ -83,53 +80,3 @@ def all_comments_for_news(author, news):
         comment.created = now + timedelta(days=index)
         comment.save()
     return news
-
-
-@pytest.fixture
-def news_id_for_args(news):
-    return (news.id,)
-
-
-@pytest.fixture
-def comment_id_for_args(comment):
-    return (comment.id,)
-
-
-@pytest.fixture
-def detail_url_news(news):
-    return reverse('news:detail', args=(news.id,))
-
-
-@pytest.fixture
-def detail_url_for_comments(all_comments_for_news):
-    return reverse('news:detail', args=(all_comments_for_news.id,))
-
-
-@pytest.fixture
-def delete_url(comment_id_for_args):
-    return reverse('news:delete', args=(comment_id_for_args))
-
-
-@pytest.fixture
-def edit_url(comment_id_for_args):
-    return reverse('news:edit', args=(comment_id_for_args))
-
-
-@pytest.fixture
-def url_to_comments(news_id_for_args):
-    news_url = reverse('news:detail', args=(news_id_for_args))
-    return news_url + '#comments'
-
-
-@pytest.fixture
-def form_data():
-    return {
-        'text': COMMENT_TEXT,
-    }
-
-
-@pytest.fixture
-def new_form_data():
-    return {
-        'text': NEW_COMMENT_TEXT,
-    }
